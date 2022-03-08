@@ -7,16 +7,24 @@ import Board from './components/Board';
 import { UserContext } from './UserContext';
 import Select from 'react-select'
 import Popup from 'reactjs-popup';
+import MessageModal from './components/MessageModel';
 
 function App() {
+  const [msg, setMsg] = useState();
   const [boards, setBoards] = useState([]);
   const [boardOptions, setBoardOptions] = useState([]);
   const [currentBoard, setCurrentBoard] = useState();
   const [boardName, setBoardName] = useState();
   const [boardDescription, setBoardDescription] = useState();
-  const [showTextField, setShowTextField] = useState(false);
-  const [open, setOpen] = useState(false);
-  const closeModal = () => setOpen(false);
+  
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openRename, setOpenRename] = useState(false);
+
+  const closeModal = () => {
+    setOpenCreate(false);
+    setOpenRename(false);
+  };
+
   function handleBoardDefault(value) {
     return boardOptions[value];
   }
@@ -32,18 +40,31 @@ function App() {
     setCurrentBoard(newboard.id);
     oldBoards.push(newboard);
     setBoards(oldBoards);
-    setShowTextField(!showTextField)
+    
     handleBoardDefault(currentBoard)
-    setOpen(!open)
+    setOpenCreate(!openCreate)
   }
-  
+  function renameBoard() {
+    var oldBoardOptions = boardOptions;
+    oldBoardOptions[currentBoard] = { value: currentBoard, label: boardName }
+    setBoardOptions(oldBoardOptions);
+    var oldBoards = boards;
+    oldBoards[currentBoard] = { id: currentBoard, boardName: boardName, boardDescription: boardDescription }
+    // var newboard = { id: oldBoards.length, boardName: boardName, boardDescription: boardDescription }
+    // setCurrentBoard(newboard.id);
+    // oldBoards.push(newboard);
+    setBoards(oldBoards);
+    
+    // handleBoardDefault(currentBoard)
+    setOpenRename(!openRename)
+  }
   return (
     <React.Fragment>
-      <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard }}>
+      <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard, msg, setMsg }}>
         <div className='navheader'>
           <div className='navleft'>
-          <button className='blueBtn' onClick={() => setOpen(!open)}>Create new board</button>
-          <Popup open={open} closeOnDocumentClick onClose={closeModal}>
+          <button className='blueBtn' onClick={() => setOpenCreate(!openCreate)}>Create new board</button>
+          <Popup open={openCreate} closeOnDocumentClick onClose={closeModal}>
           <a className="close" onClick={closeModal}>
             &times;
           </a>
@@ -54,13 +75,26 @@ function App() {
             </Popup>
           <Select options={boardOptions} placeholder="Select Board" value={handleBoardDefault(currentBoard)} onChange={handleBoardSelect}/>
             </div>
-          
           {
             boards[currentBoard] &&
-            <h1 className='text-center'>{boards[currentBoard].boardName}</h1>
+            <React.Fragment>
+              <h1 className='text-center'>{boards[currentBoard].boardName}</h1>
+              <p className='boardDesc'>Description: {boards[currentBoard].boardDescription}</p>
+              <button className='blueBtn' onClick={() => setOpenRename(!openRename)}>Rename Board Name and Description</button>
+              <Popup open={openRename} closeOnDocumentClick onClose={closeModal}>
+          <a className="close" onClick={closeModal}>
+            &times;
+          </a>
+            <h1 className='text-center'>Rename Current Board</h1>
+            <label>Board Name: </label><input name="boardName" placeholder='Board Name' onChange={(e) => { setBoardName(e.target.value); }} defaultValue={boards[currentBoard].boardName}></input><br /><br/>
+            <label>Board Description: </label><input name="boardDescription" placeholder='Board Description' onChange={(e) => { setBoardDescription(e.target.value); }} defaultValue={boards[currentBoard].boardDescription}></input><br />
+            <button className='blueBtn' onClick={() => renameBoard()}>Rename board</button>
+            </Popup>
+            </React.Fragment>
           }
         </div>
         <Board currentBoard={currentBoard}></Board>
+        {msg && <MessageModal message={msg}></MessageModal>}
       </UserContext.Provider>
 
     </React.Fragment>

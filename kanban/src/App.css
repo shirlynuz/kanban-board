@@ -1,5 +1,7 @@
+body{
+  background-color: #F6F5DC;
+}
 .navheader{
-  
   margin-top: 10px;
   
   position: relative;
@@ -8,9 +10,13 @@
   position: absolute;
   display: flex;
   align-items: center;
+  top: 5px;
+}
+.boardDesc{
+  margin-left: 10px; 
 }
 .blueBtn{
-  margin: 10px;
+  margin: 0 10px;
   background-color: transparent;
   border: 2px solid #109BF8 ;
   border-radius: 25px;
@@ -33,4 +39,37 @@ label{
   background: #ffffff;
   border-radius: 18px;
   border: 1px solid #cfcece;
+}
+.board{
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.boardcard{
+  flex: 1;
+  background-color: #F7F391;
+  padding: 10px;
+  margin: 10px;
+  min-width: 300px;
+}
+.cardtext, .cardtextinput{
+  width: 100%;
+}
+.cardtextinput{
+  padding: 5px;
+}
+.cardtext{
+  background-color: #ffffff;
+  padding: 5px;
+  position: relative;
+  word-wrap: break-word;
+  margin: 10px 0;
+}
+.cardtextdelete{
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: transparent;
+  border: none;
 }
