@@ -1,8 +1,6 @@
-import logo from './logo.svg';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'reactjs-popup/dist/index.css';
-import './App.css';
-import React, { useState, useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
+import React, { useState } from 'react';
 import Board from './components/Board';
 import { UserContext } from './UserContext';
 import Select from 'react-select'
@@ -16,9 +14,11 @@ function App() {
   const [currentBoard, setCurrentBoard] = useState();
   const [boardName, setBoardName] = useState();
   const [boardDescription, setBoardDescription] = useState();
-  
+  const [maxCards, setMaxCards] = useState(2);
+  const [editMaxCard, setEditMaxCard] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openRename, setOpenRename] = useState(false);
+  const [allCards, setAllCards] = useState([{"id":1, "cardDescription":"hey", "cardType":"todo"}, {"id":2, "cardDescription":"heyboo", "cardType":"progress"}]);
 
   const closeModal = () => {
     setOpenCreate(false);
@@ -50,17 +50,13 @@ function App() {
     setBoardOptions(oldBoardOptions);
     var oldBoards = boards;
     oldBoards[currentBoard] = { id: currentBoard, boardName: boardName, boardDescription: boardDescription }
-    // var newboard = { id: oldBoards.length, boardName: boardName, boardDescription: boardDescription }
-    // setCurrentBoard(newboard.id);
-    // oldBoards.push(newboard);
     setBoards(oldBoards);
-    
-    // handleBoardDefault(currentBoard)
     setOpenRename(!openRename)
   }
+  
   return (
-    <React.Fragment>
-      <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard, msg, setMsg }}>
+    <DndProvider backend={HTML5Backend}>
+      <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard, msg, setMsg, maxCards, setMaxCards }}>
         <div className='navheader'>
           <div className='navleft'>
           <button className='blueBtn' onClick={() => setOpenCreate(!openCreate)}>Create new board</button>
@@ -74,6 +70,14 @@ function App() {
             <button className='blueBtn' onClick={() => createNewBoard()}>Create board</button>          
             </Popup>
           <Select options={boardOptions} placeholder="Select Board" value={handleBoardDefault(currentBoard)} onChange={handleBoardSelect}/>
+          {!editMaxCard && <React.Fragment>
+            <p className='boardDesc'>Max Card: {maxCards}</p>
+            <button className='blueBtn' onClick={()=>setEditMaxCard(!editMaxCard)}>Edit max card</button>
+            </React.Fragment> }
+          {editMaxCard && <React.Fragment>
+            <label className='boardDesc'>Max Card: </label><input type="number" name="maxCard" placeholder='maxCard' defaultValue={maxCards} onChange={(e) => { setMaxCards(e.target.value); }}></input><button className='blueBtn' onClick={()=>setEditMaxCard(!editMaxCard)}>Save</button>
+          </React.Fragment>}
+          
             </div>
           {
             boards[currentBoard] &&
@@ -94,10 +98,13 @@ function App() {
           }
         </div>
         <Board currentBoard={currentBoard}></Board>
+
+          
+
         {msg && <MessageModal message={msg}></MessageModal>}
       </UserContext.Provider>
 
-    </React.Fragment>
+    </DndProvider>
   );
 }
 
