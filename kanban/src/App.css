@@ -5,16 +5,19 @@ p{
 body{
   background-color: #F6F5DC;
 }
+.boardTitle{
+  margin-left: 10px;
+}
 .navheader{
   margin-top: 10px;
-  
-  position: relative;
+  justify-content: space-between;
+  display: flex;
 }
 .navleft{
-  position: absolute;
+  /* position: absolute; */
   display: flex;
   align-items: center;
-  top: 5px;
+  /* top: 5px; */
 }
 .boardDesc{
   margin-left: 10px; 
@@ -78,5 +81,5 @@ label{
   border: none;
 }
 .colHover{
-  background-color: yellow;
+  background-color: black;
 }

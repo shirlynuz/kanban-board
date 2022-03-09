@@ -21,7 +21,10 @@ const Board = () => {
         if (existingCardsInCol.length < maxCards){
             var newAllCards = allCards.filter(card => card.id != item.id).concat({...item, cardType})
             setAllCards(newAllCards);
-        } else {
+        } else if (item.cardType == cardType){
+            var newAllCards = allCards.filter(card => card.id != item.id).concat({...item, cardType})
+            setAllCards(newAllCards);
+        }else {
             setMsg("Max Cards for that column reached");
         }
       }

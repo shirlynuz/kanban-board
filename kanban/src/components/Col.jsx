@@ -3,7 +3,7 @@ const Col = ({ children, isOver}) => {
     const className = isOver ? "colHover" : ""
     
     return ( 
-        <div className={`col${className}`}>
+        <div className={`${className}`}>
             {children}
         </div>
      );

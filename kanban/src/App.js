@@ -58,6 +58,10 @@ function App() {
     <DndProvider backend={HTML5Backend}>
       <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard, msg, setMsg, maxCards, setMaxCards }}>
         <div className='navheader'>
+        {
+            boards[currentBoard] &&
+              <h1 className='boardTitle'>{boards[currentBoard].boardName}</h1>
+        }
           <div className='navleft'>
           <button className='blueBtn' onClick={() => setOpenCreate(!openCreate)}>Create new board</button>
           <Popup open={openCreate} closeOnDocumentClick onClose={closeModal}>
@@ -79,10 +83,11 @@ function App() {
           </React.Fragment>}
           
             </div>
-          {
+          
+        </div>
+        {
             boards[currentBoard] &&
             <React.Fragment>
-              <h1 className='text-center'>{boards[currentBoard].boardName}</h1>
               <p className='boardDesc'>Description: {boards[currentBoard].boardDescription}</p>
               <button className='blueBtn' onClick={() => setOpenRename(!openRename)}>Rename Board Name and Description</button>
               <Popup open={openRename} closeOnDocumentClick onClose={closeModal}>
@@ -96,7 +101,6 @@ function App() {
             </Popup>
             </React.Fragment>
           }
-        </div>
         <Board currentBoard={currentBoard}></Board>
 
           
