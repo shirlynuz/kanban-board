@@ -1,24 +1,26 @@
-import { DndProvider } from 'react-dnd';
-import {HTML5Backend} from 'react-dnd-html5-backend';
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Board from './components/Board';
 import { UserContext } from './UserContext';
 import Select from 'react-select'
 import Popup from 'reactjs-popup';
 import MessageModal from './components/MessageModel';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEdit } from '@fortawesome/free-solid-svg-icons'
+import { retrieveFromLocalStorage } from './Utils';
+
 function App() {
   const [msg, setMsg] = useState();
-  const [boards, setBoards] = useState([]);
-  const [boardOptions, setBoardOptions] = useState([]);
+  const [boards, setBoards] = useState(retrieveFromLocalStorage("boards"));
+  const [boardOptions, setBoardOptions] = useState(retrieveFromLocalStorage("boardOptions"));
   const [currentBoard, setCurrentBoard] = useState();
   const [boardName, setBoardName] = useState();
   const [boardDescription, setBoardDescription] = useState();
-  const [maxCards, setMaxCards] = useState(2);
+  const [maxCards, setMaxCards] = useState(5);
   const [editMaxCard, setEditMaxCard] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openRename, setOpenRename] = useState(false);
-  const [allCards, setAllCards] = useState([{"id":1, "cardDescription":"hey", "cardType":"todo"}, {"id":2, "cardDescription":"heyboo", "cardType":"progress"}]);
 
   const closeModal = () => {
     setOpenCreate(false);
@@ -30,6 +32,8 @@ function App() {
   }
   function handleBoardSelect(value) {
     setCurrentBoard(value.value);
+    setBoardName(boards[value.value].boardName);
+    setBoardDescription(boards[value.value].boardDescription);
 }
   function createNewBoard() {
     var oldBoardOptions = boardOptions;
@@ -40,7 +44,9 @@ function App() {
     setCurrentBoard(newboard.id);
     oldBoards.push(newboard);
     setBoards(oldBoards);
-    
+    localStorage.setItem('boards', JSON.stringify(oldBoards));
+    localStorage.setItem('boardOptions', JSON.stringify(oldBoardOptions));
+
     handleBoardDefault(currentBoard)
     setOpenCreate(!openCreate)
   }
@@ -51,16 +57,30 @@ function App() {
     var oldBoards = boards;
     oldBoards[currentBoard] = { id: currentBoard, boardName: boardName, boardDescription: boardDescription }
     setBoards(oldBoards);
+    localStorage.setItem('boards', JSON.stringify(oldBoards));
+    localStorage.setItem('boardOptions', JSON.stringify(oldBoardOptions));
     setOpenRename(!openRename)
   }
-  
+  useEffect(() => {
+    if (boardOptions.length > 0){
+      setCurrentBoard(boardOptions[0].value);
+      setBoardName(boards[boardOptions[0].value].boardName);
+      setBoardDescription(boards[boardOptions[0].value].boardDescription);
+    }
+  },[boardOptions]);
   return (
-    <DndProvider backend={HTML5Backend}>
+    
       <UserContext.Provider value={{ boards, setBoards, currentBoard, setCurrentBoard, msg, setMsg, maxCards, setMaxCards }}>
         <div className='navheader'>
         {
             boards[currentBoard] &&
+            <React.Fragment>
+              <button className='blueBtn' onClick={() => setOpenRename(!openRename)}><FontAwesomeIcon icon={faEdit} /> Board</button>
               <h1 className='boardTitle'>{boards[currentBoard].boardName}</h1>
+              
+            </React.Fragment>
+              
+              
         }
           <div className='navleft'>
           <button className='blueBtn' onClick={() => setOpenCreate(!openCreate)}>Create new board</button>
@@ -76,7 +96,7 @@ function App() {
           <Select options={boardOptions} placeholder="Select Board" value={handleBoardDefault(currentBoard)} onChange={handleBoardSelect}/>
           {!editMaxCard && <React.Fragment>
             <p className='boardDesc'>Max Card: {maxCards}</p>
-            <button className='blueBtn' onClick={()=>setEditMaxCard(!editMaxCard)}>Edit max card</button>
+            <button className='blueBtn' onClick={()=>setEditMaxCard(!editMaxCard)}><FontAwesomeIcon icon={faEdit} /></button>
             </React.Fragment> }
           {editMaxCard && <React.Fragment>
             <label className='boardDesc'>Max Card: </label><input type="number" name="maxCard" placeholder='maxCard' defaultValue={maxCards} onChange={(e) => { setMaxCards(e.target.value); }}></input><button className='blueBtn' onClick={()=>setEditMaxCard(!editMaxCard)}>Save</button>
@@ -89,7 +109,6 @@ function App() {
             boards[currentBoard] &&
             <React.Fragment>
               <p className='boardDesc'>Description: {boards[currentBoard].boardDescription}</p>
-              <button className='blueBtn' onClick={() => setOpenRename(!openRename)}>Rename Board Name and Description</button>
               <Popup open={openRename} closeOnDocumentClick onClose={closeModal}>
           <a className="close" onClick={closeModal}>
             &times;
@@ -101,14 +120,11 @@ function App() {
             </Popup>
             </React.Fragment>
           }
-        <Board currentBoard={currentBoard}></Board>
-
-          
+        <Board currentBoard={currentBoard}></Board>          
 
         {msg && <MessageModal message={msg}></MessageModal>}
       </UserContext.Provider>
 
-    </DndProvider>
   );
 }
 

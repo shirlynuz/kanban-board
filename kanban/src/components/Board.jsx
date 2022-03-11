@@ -1,42 +1,49 @@
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../UserContext';
+import { DndProvider } from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
 import uuid from 'react-uuid';
 import DropWrapper from './DropWrapper';
 import Card from './Card';
 import Col from './Col';
+import { retrieveFromLocalStorage } from '../Utils';
 
 const Board = () => {
     const { currentBoard, setMsg, maxCards } = useContext(UserContext)
-    const [allCards, setAllCards] = useState([]);
-    
-
+    const [allCards, setAllCards] = useState(retrieveFromLocalStorage("allCards"));
     const [cardDesc, setCardDesc] = useState();
     const [showToDoTextField, setShowToDoTextField] = useState(false);
     const [showProgressTextField, setShowProgressTextField] = useState(false);
-
     const [showDoneTextField, setShowDoneTextField] = useState(false);
 
     const onDrop = (item, monitor, cardType) =>{
         var existingCardsInCol = allCards.filter(card => card.cardType == cardType && card.boardNo == currentBoard)
-        if (existingCardsInCol.length < maxCards){
-            var newAllCards = allCards.filter(card => card.id != item.id).concat({...item, cardType})
-            setAllCards(newAllCards);
-        } else if (item.cardType == cardType){
-            var newAllCards = allCards.filter(card => card.id != item.id).concat({...item, cardType})
-            setAllCards(newAllCards);
-        }else {
+
+        // check if number of cards in the column is < max card allowed in the column. if drag within the same column, return true regardless of the number of cards in the column
+        if (existingCardsInCol.length < maxCards || item.cardType == cardType){
+            var draggedCardIndex = allCards.findIndex(currentCard => currentCard.id == item.id);
+            item.cardType = cardType;
+            var tempData = allCards.filter(card => card.id != item.id);
+            tempData.splice(draggedCardIndex, 0, item);
+            setAllCards(tempData);
+            localStorage.setItem('allCards', JSON.stringify(tempData));
+        } else {
             setMsg("Max Cards for that column reached");
         }
       }
     
-      const moveItem = (dragIndex, hoverIndex)=>{
-        const item = allCards[dragIndex];
-        setAllCards(prevState =>{
-          const newItems = prevState.filter((i,idx)=>idx!=dragIndex);
-          newItems.splice(hoverIndex, 0, item);
-          return[...newItems];
-        })
-      }
+      const moveItem = (dragIndex, hoverIndex, cardType) => {
+        
+        var draggedCard = allCards.filter(currentCard => currentCard.boardNo == currentBoard && currentCard.cardType == cardType)[dragIndex]
+        var hoverCard = allCards.filter(currentCard => currentCard.boardNo == currentBoard && currentCard.cardType == cardType)[hoverIndex]
+        var hoverCardIndex = allCards.findIndex(currentCard => currentCard.id == hoverCard.id);
+        var newCards = allCards.filter(card => card.id != draggedCard.id);
+        newCards.splice(hoverCardIndex, 0, draggedCard);
+        setAllCards(newCards);
+        localStorage.setItem('allCards', JSON.stringify(newCards));
+
+    };
+
 
     function addNewCard(cardType) {
         setShowToDoTextField(false);
@@ -49,6 +56,7 @@ const Board = () => {
                 var currentCards = allCards;
                 currentCards.push(newcard);
                 setAllCards(currentCards);
+                localStorage.setItem('allCards', JSON.stringify(currentCards));
                 setCardDesc(null);
             } else {
                 setMsg("Max Cards for that column reached");
@@ -58,13 +66,17 @@ const Board = () => {
     function deleteCard(cardId) {
         var newAllCards = allCards.filter(currentCard => currentCard.id != cardId);
         setAllCards(newAllCards);
+        localStorage.setItem('allCards', JSON.stringify(newAllCards));
     }
+
     return (<React.Fragment>
         {currentBoard != null &&
+        <DndProvider backend={HTML5Backend}>
             <div className='board'>
-                <DropWrapper onDrop={onDrop} cardType="todo">
+                <div className="boardcard">
+                    <h2>To Do</h2>    
+                    <DropWrapper onDrop={onDrop} cardType="todo">
                     <Col>
-                    <h2>To Do</h2>
                     {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "todo").map((card,index)=>
                         <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
                     )}
@@ -77,51 +89,55 @@ const Board = () => {
                         </React.Fragment>
                     }
                     <br />
-                    <button className='blueBtn' onClick={() => setShowToDoTextField(!showToDoTextField)}>Create new card{showToDoTextField}</button><br />
                     </Col>
                 </DropWrapper>
-                <DropWrapper onDrop={onDrop} cardType="progress">
-                    <Col>
-                    <h2>In Progress</h2>
-                    {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "progress").map((card,index)=>
-                        <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
-                    )}
-                    {showProgressTextField &&
-                        <React.Fragment>
-                            <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("progress")} onChange={(e) => {
-                                setCardDesc(e.target.value);
-                            }}></textarea><br />
-                            <button className='blueBtn' onClick={() => addNewCard("progress")}>Save</button><br />
-                        </React.Fragment>
-
-                    }
-                    <br />
-                    <button className='blueBtn' onClick={() => setShowProgressTextField(!showProgressTextField)}>Create new card</button><br />
-                    </Col>
-                </DropWrapper>
-                <DropWrapper onDrop={onDrop} cardType="done">
-                    <Col>
-                    <h2>Done</h2>
-                    {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "done").map((card,index)=>
-                        <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
-                    )}
-                    {showDoneTextField &&
-                        <React.Fragment>
-                            <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("done")} onChange={(e) => {
-                                setCardDesc(e.target.value);
-                            }}></textarea><br />
-                            <button className='blueBtn' onClick={() => addNewCard("done")}>Save</button><br />
-                        </React.Fragment>
-
-                    }
-                    <br />
-                    <button className='blueBtn' onClick={() => setShowDoneTextField(!showDoneTextField)}>Create new card</button><br />
-                    </Col>
-                </DropWrapper>
+                <button className='blueBtn' onClick={() => setShowToDoTextField(!showToDoTextField)}>Create new card{showToDoTextField}</button><br />
+                </div>
                 
-            </div>
-        }
+                <div className="boardcard">
+                    <h2>In Progress</h2>
+                    <DropWrapper onDrop={onDrop} cardType="progress">
+                        <Col>
+                        {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "progress").map((card,index)=>
+                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
+                        )}
+                        {showProgressTextField &&
+                            <React.Fragment>
+                                <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("progress")} onChange={(e) => {
+                                    setCardDesc(e.target.value);
+                                }}></textarea><br />
+                                <button className='blueBtn' onClick={() => addNewCard("progress")}>Save</button><br />
+                            </React.Fragment>
+                        }
+                        <br />
+                        </Col>
+                    </DropWrapper>
+                    <button className='blueBtn' onClick={() => setShowProgressTextField(!showProgressTextField)}>Create new card</button><br />
+                </div>
 
+                <div className="boardcard">
+                <h2>Done</h2>
+                    <DropWrapper onDrop={onDrop} cardType="done">
+                        <Col>
+                        {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "done").map((card,index)=>
+                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
+                        )}
+                        {showDoneTextField &&
+                            <React.Fragment>
+                                <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("done")} onChange={(e) => {
+                                    setCardDesc(e.target.value);
+                                }}></textarea><br />
+                                <button className='blueBtn' onClick={() => addNewCard("done")}>Save</button><br />
+                            </React.Fragment>
+                        }
+                        <br />
+                        </Col>
+                    </DropWrapper>
+                    <button className='blueBtn' onClick={() => setShowDoneTextField(!showDoneTextField)}>Create new card</button><br />
+                </div>
+            </div>
+            </DndProvider>   
+        }
     </React.Fragment>);
 }
 
