@@ -29,8 +29,14 @@ body{
   border-radius: 5px;
   padding: 2px 10px;
 }
+.blueBtnNoMargin{
+  margin: 0px;
+}
 label{
   margin-right: 10px;
+}
+.inputWidth{
+  width: 50px;
 }
 .close{
   color: #000000;
@@ -76,7 +82,7 @@ label{
 .cardtextdelete{
   position: absolute;
   right: 0;
-  top: 0;
+  top: 4px;
   background-color: transparent;
   border: none;
 }

@@ -68,7 +68,13 @@ const Board = () => {
         setAllCards(newAllCards);
         localStorage.setItem('allCards', JSON.stringify(newAllCards));
     }
-
+    function editCard(card, cardDesc) {
+        var tempCards = allCards;
+        var cardToEdit = tempCards.findIndex(currentCard => currentCard.id == card.id);
+        tempCards[cardToEdit].description = cardDesc;
+        setAllCards(tempCards);
+        localStorage.setItem('allCards', JSON.stringify(tempCards));
+    }
     return (<React.Fragment>
         {currentBoard != null &&
         <DndProvider backend={HTML5Backend}>
@@ -78,20 +84,20 @@ const Board = () => {
                     <DropWrapper onDrop={onDrop} cardType="todo">
                     <Col>
                     {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "todo").map((card,index)=>
-                        <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
+                        <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard} editCard={editCard}></Card>
                     )}
                     {showToDoTextField &&
                         <React.Fragment>
                             <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("todo")} onChange={(e) => {
                                 setCardDesc(e.target.value);
                             }}></textarea><br />
-                            <button className='blueBtn' onClick={() => addNewCard("todo")}>Save</button><br />
+                            <button className='blueBtn blueBtnNoMargin' onClick={() => addNewCard("todo")}>Save</button><br />
                         </React.Fragment>
                     }
                     <br />
                     </Col>
                 </DropWrapper>
-                <button className='blueBtn' onClick={() => setShowToDoTextField(!showToDoTextField)}>Create new card{showToDoTextField}</button><br />
+                <button className='blueBtn blueBtnNoMargin' onClick={() => setShowToDoTextField(!showToDoTextField)}>Create new card{showToDoTextField}</button><br />
                 </div>
                 
                 <div className="boardcard">
@@ -99,20 +105,20 @@ const Board = () => {
                     <DropWrapper onDrop={onDrop} cardType="progress">
                         <Col>
                         {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "progress").map((card,index)=>
-                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
+                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard} editCard={editCard}></Card>
                         )}
                         {showProgressTextField &&
                             <React.Fragment>
                                 <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("progress")} onChange={(e) => {
                                     setCardDesc(e.target.value);
                                 }}></textarea><br />
-                                <button className='blueBtn' onClick={() => addNewCard("progress")}>Save</button><br />
+                                <button className='blueBtn blueBtnNoMargin' onClick={() => addNewCard("progress")}>Save</button><br />
                             </React.Fragment>
                         }
                         <br />
                         </Col>
                     </DropWrapper>
-                    <button className='blueBtn' onClick={() => setShowProgressTextField(!showProgressTextField)}>Create new card</button><br />
+                    <button className='blueBtn blueBtnNoMargin' onClick={() => setShowProgressTextField(!showProgressTextField)}>Create new card</button><br />
                 </div>
 
                 <div className="boardcard">
@@ -120,20 +126,20 @@ const Board = () => {
                     <DropWrapper onDrop={onDrop} cardType="done">
                         <Col>
                         {allCards.filter(currentCard=>currentCard.boardNo == currentBoard && currentCard.cardType == "done").map((card,index)=>
-                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard}></Card>
+                            <Card key={index} card={card} index={index} moveItem={moveItem} cardType={card.cardType} deleteCard={deleteCard} editCard={editCard}></Card>
                         )}
                         {showDoneTextField &&
                             <React.Fragment>
                                 <textarea autoFocus className='cardtextinput' placeholder='Enter a description for this card' onBlur={() => addNewCard("done")} onChange={(e) => {
                                     setCardDesc(e.target.value);
                                 }}></textarea><br />
-                                <button className='blueBtn' onClick={() => addNewCard("done")}>Save</button><br />
+                                <button className='blueBtn blueBtnNoMargin' onClick={() => addNewCard("done")}>Save</button><br />
                             </React.Fragment>
                         }
                         <br />
                         </Col>
                     </DropWrapper>
-                    <button className='blueBtn' onClick={() => setShowDoneTextField(!showDoneTextField)}>Create new card</button><br />
+                    <button className='blueBtn blueBtnNoMargin' onClick={() => setShowDoneTextField(!showDoneTextField)}>Create new card</button><br />
                 </div>
             </div>
             </DndProvider>   
