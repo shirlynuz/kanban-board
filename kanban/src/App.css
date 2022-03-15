@@ -96,9 +96,15 @@ label{
     width: 400px;
   }
 }
+@media screen and (max-width: 821px) {
+  .board{
+    justify-content: center;
+  }
+}
 @media screen and (max-width: 600px) {
   .navheader{
     flex-wrap: wrap-reverse;
     justify-content: start;
   }
+  
 }
